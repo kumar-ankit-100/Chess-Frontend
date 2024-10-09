@@ -6,6 +6,8 @@ const globalState = initgame();
 const rootDiv = document.getElementById("root");
 const flatArray = globalState.flat();
 let previousHighlightedSquare = [];
+let previousHighlightedCross = [];
+
 let storedPosition = ""; // To store the clicked piece's position
 
 function highlightSquareBubble(previousHighlightedSquare) {
@@ -23,12 +25,42 @@ function highlightSquareyellow(position) {
     square.appendChild(yellowDiv);
 
 }
-function removeHighlight(previousHighlightedSquare) {
+function highlightCaptureMoves(captureMoves) {
+    captureMoves.forEach((position) => {
+        const pieceElement = document.getElementById(position); // Get the square by ID (e.g., 'd5', 'f5')
+
+        if (pieceElement) {
+            const redCross = document.createElement("div");
+            redCross.className = "red-cross"; // Add a class for styling
+            redCross.style.position = "absolute";
+            redCross.style.top = "0";
+            redCross.style.left = "0";
+            redCross.style.width = "100%";
+            redCross.style.height = "100%";
+            redCross.style.background = "rgba(255, 0, 0, 0.6)"; // Semi-transparent red overlay
+            redCross.style.zIndex = "2"; // Make sure it is above the piece
+
+            // Append the red cross over the piece
+            pieceElement.appendChild(redCross);
+        }
+        // }
+    });
+}
+function removeHighlightBubble(previousHighlightedSquare) {
     previousHighlightedSquare.forEach(element => {
         console.log(element);
         const square = document.getElementById(element);
         const bubble = square.querySelector(".bubble");
         square.removeChild(bubble);
+    });
+
+}
+function removeHighlightCross(previousHighlightedCross) {
+    previousHighlightedCross.forEach(element => {
+        console.log("Remove Cross highlight : " + element);
+        const square = document.getElementById(element);
+        const redCross = square.querySelector(".red-cross");
+        square.removeChild(redCross);
     });
 
 }
@@ -41,9 +73,10 @@ function temp(id) {
 
 function globalEventListner() {
     rootDiv.addEventListener("click", (Event) => {
-        // console.log(Event);
+        console.log(Event);
         const clickedId = Event.target.parentNode.id;
         const flatArray = globalState.flat();
+        // console.log(Event.target.className);
         //if we click on image piece that mean we are exploring possible moves
         if (Event.target.localName === 'img') {
             // console.log(clickedId + " " + previousHighlightedSquare[0])
@@ -52,8 +85,12 @@ function globalEventListner() {
             console.log(clickedId);
             console.log(previousHighlightedSquare.length);
             if (previousHighlightedSquare.length > 0) {
-                removeHighlight(previousHighlightedSquare);
+                removeHighlightBubble(previousHighlightedSquare);
                 previousHighlightedSquare = [];
+            }
+            if (previousHighlightedCross.length > 0) {
+                removeHighlightCross(previousHighlightedCross);
+                previousHighlightedCross = [];
             }
             storedPosition = clickedId; // Store the clicked piece's position (e.g., "e2")
 
@@ -69,13 +106,14 @@ function globalEventListner() {
 
         }
         //if class is bubble that mean we either move pieces or capture the pieces
-        else if (Event.target.className == "bubble" || previousHighlightedSquare.find((temp) => temp == Event.target.id)) {
+        else if (Event.target.className == "bubble" || Event.target.className == "red-cross" || previousHighlightedSquare.find((temp) => temp == Event.target.id)) {
+
             if (storedPosition) {
                 // Concatenate the stored position with the current square to form the move
                 let move = "";
                 if (clickedId) {
-                    console.log("you have clicked on bubble");  
-                    move = storedPosition + clickedId;  
+                    console.log("you have clicked on either bubble or red-cross");
+                    move = storedPosition + clickedId;
                 }
                 else {
                     console.log("you have clicked on square");
@@ -97,13 +135,17 @@ function globalEventListner() {
                 console.log("No piece selected, click on a piece first.");
             }
 
-            
+
 
         }
         else {
             if (previousHighlightedSquare.length > 0) {
-                removeHighlight(previousHighlightedSquare);
+                removeHighlightBubble(previousHighlightedSquare);
                 previousHighlightedSquare = [];
+            }
+            if (previousHighlightedCross.length > 0) {
+                removeHighlightCross(previousHighlightedCross);
+                previousHighlightedCross = [];
             }
         }
     });
@@ -125,43 +167,56 @@ socket.addEventListener('message', function (event) {
     console.log("Received from server:", data);
 
     // If the response contains possible moves, update previousHighlightedSquare
-    if (data.possibleMoves) {
-        previousHighlightedSquare = data.possibleMoves; // List of possible moves
+    if (data.possibleMoves || data.possibleCaptures) {
+        // Highlight the possible move squares (bubbles)
+        if (data.possibleMoves) {
+            console.log(data.possibleMoves);
+            previousHighlightedSquare = data.possibleMoves; // List of possible moves
+            highlightSquareBubble(previousHighlightedSquare); // Call your function to highlight these squares
+        }
 
-        // Highlight the possible move squares on the frontend
-        highlightSquareBubble(previousHighlightedSquare);
+        // Highlight capture moves with a red cross
+        if (data.possibleCaptures) {
+            console.log(data.possibleCaptures);
+            previousHighlightedCross = data.possibleCaptures; // List of possible moves
+            highlightCaptureMoves(previousHighlightedCross); // A new function to highlight captures
+        }
     }
     //this is the case for updating board 
- 
-    if (data.status) {
+
+    if (data.status=="success") {
         console.log("backend board is updated successfully");
-    
+
         // Get the previous and new positions from the move (e.g., "e2e4")
         const move = data.position; // e.g., "e2e4"
         const fromPosition = move.slice(0, 2); // "e2"
         const toPosition = move.slice(2, 4); // "e4"
-    
+
         // Find the elements for the previous and new positions
         const fromElement = document.getElementById(fromPosition);
         const toElement = document.getElementById(toPosition);
-    
+
         if (fromElement && toElement) {
             // Get the piece (child) from the previous position
             const piece = fromElement.querySelector('img');
-    
+            const destinationpiece = toElement.querySelector('img');
+            if (destinationpiece)
+                toElement.removeChild(destinationpiece);
             // Remove the piece from the previous position
             if (piece) {
                 fromElement.removeChild(piece);
-    
+
                 // Append the piece to the new position
                 toElement.appendChild(piece);
-    
+
                 console.log(`Moved piece from ${fromPosition} to ${toPosition}`);
             }
-    
+
             // Remove any bubbles (possible moves) after the move is completed
-            removeHighlight(previousHighlightedSquare); // Assuming removeHighlight() is a function to remove bubbles
+            removeHighlightBubble(previousHighlightedSquare); // Assuming removeHighlight() is a function to remove bubbles
+            removeHighlightCross(previousHighlightedCross);
             previousHighlightedSquare = []; // Clear highlighted squares array
+            previousHighlightedCross = [];
         }
     } else {
         console.log("There is an error in updating the backend board");
