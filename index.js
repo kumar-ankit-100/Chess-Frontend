@@ -96,8 +96,14 @@ function globalEventListner() {
 
             // Update previousHighlightedSquare with the new position
             // Create the JSON payload
+            let url = Event.target.src;
+            let parts = url.split('/');
+            let filename = parts[parts.length - 1]; // Get the filename (pawn.png)
+            let pieceName = filename.split('.')[0]; // Remove the extension (.png)
+            console.log(pieceName); // Output: pawn
             const sendingJson = JSON.stringify({
                 purpose: "generateMove",
+                pieceName: pieceName,
                 position: clickedId // Send the clicked square (e.g., "e2")
             });
 
@@ -184,7 +190,7 @@ socket.addEventListener('message', function (event) {
     }
     //this is the case for updating board 
 
-    if (data.status=="success") {
+    if (data.status == "success") {
         console.log("backend board is updated successfully");
 
         // Get the previous and new positions from the move (e.g., "e2e4")
