@@ -7,6 +7,7 @@ const rootDiv = document.getElementById("root");
 const flatArray = globalState.flat();
 let previousHighlightedSquare = [];
 let previousHighlightedCross = [];
+let playerColor = "";
 
 let storedPosition = ""; // To store the clicked piece's position
 
@@ -71,44 +72,51 @@ function temp(id) {
     return [id[0] + temp1, id[0] + temp2];
 }
 
-function globalEventListner() {
+function globalEventListner(pieceColor) {
     rootDiv.addEventListener("click", (Event) => {
         console.log(Event);
         const clickedId = Event.target.parentNode.id;
         const flatArray = globalState.flat();
+        console.log("my piece colour is : "+playerColor);
+
         // console.log(Event.target.className);
         //if we click on image piece that mean we are exploring possible moves
         if (Event.target.localName === 'img') {
-            // console.log(clickedId + " " + previousHighlightedSquare[0])
-            const square = flatArray.find((temp) => temp.id === clickedId);
-            // console.log(square);
-            console.log(clickedId);
-            console.log(previousHighlightedSquare.length);
-            if (previousHighlightedSquare.length > 0) {
-                removeHighlightBubble(previousHighlightedSquare);
-                previousHighlightedSquare = [];
-            }
-            if (previousHighlightedCross.length > 0) {
-                removeHighlightCross(previousHighlightedCross);
-                previousHighlightedCross = [];
-            }
-            storedPosition = clickedId; // Store the clicked piece's position (e.g., "e2")
-
-            // Update previousHighlightedSquare with the new position
-            // Create the JSON payload
             let url = Event.target.src;
             let parts = url.split('/');
-            let filename = parts[parts.length - 1]; // Get the filename (pawn.png)
-            let pieceName = filename.split('.')[0]; // Remove the extension (.png)
-            console.log(pieceName); // Output: pawn
-            const sendingJson = JSON.stringify({
-                purpose: "generateMove",
-                pieceName: pieceName,
-                position: clickedId // Send the clicked square (e.g., "e2")
-            });
+            console.log("your pawn is " + parts[parts.length - 2]);
+            if (pieceColor == parts[parts.length - 2]) {
+                // console.log(clickedId + " " + previousHighlightedSquare[0])
+                const square = flatArray.find((temp) => temp.id === clickedId);
+                // console.log(square);
+                console.log(clickedId);
+                console.log(previousHighlightedSquare.length);
+                if (previousHighlightedSquare.length > 0) {
+                    removeHighlightBubble(previousHighlightedSquare);
+                    previousHighlightedSquare = [];
+                }
+                if (previousHighlightedCross.length > 0) {
+                    removeHighlightCross(previousHighlightedCross);
+                    previousHighlightedCross = [];
+                }
+                storedPosition = clickedId; // Store the clicked piece's position (e.g., "e2")
 
-            // Send the JSON through WebSocket
-            socket.send(sendingJson);
+                // Update previousHighlightedSquare with the new position
+                // Create the JSON payload
+
+                let filename = parts[parts.length - 1]; // Get the filename (pawn.png)
+                let pieceName = filename.split('.')[0]; // Remove the extension (.png)
+                console.log(pieceName); // Output: pawn
+                const sendingJson = JSON.stringify({
+                    purpose: "generateMove",
+                    pieceName: pieceName,
+                    position: clickedId // Send the clicked square (e.g., "e2")
+                });
+
+                // Send the JSON through WebSocket
+                socket.send(sendingJson);
+            }
+
 
         }
         //if class is bubble that mean we either move pieces or capture the pieces
@@ -167,11 +175,52 @@ socket.addEventListener('open', function (event) {
     console.log('Connected to WebSocket server');
 });
 
+function updatingPieceMove(move){
+        const fromPosition = move.slice(0, 2); // "e2"
+        const toPosition = move.slice(2, 4); // "e4"
+
+        // Find the elements for the previous and new positions
+        const fromElement = document.getElementById(fromPosition);
+        const toElement = document.getElementById(toPosition);
+
+        if (fromElement && toElement) {
+            // Get the piece (child) from the previous position
+            const piece = fromElement.querySelector('img');
+            const destinationpiece = toElement.querySelector('img');
+            
+            if (destinationpiece) return;
+            // Remove the piece from the previous position
+            if (piece) {
+                fromElement.removeChild(piece);
+
+                // Append the piece to the new position
+                toElement.appendChild(piece);
+
+                console.log(`updatig your board ... Moved piece from ${fromPosition} to ${toPosition}`);
+            }
+           }
+}
+
 // Listen for messages
 socket.addEventListener('message', function (event) {
     const data = JSON.parse(event.data); // Parse the received JSON
     console.log("Received from server:", data);
-
+    //check that either match started 
+    if (data.color) {
+        if (data.color == "black") {
+            playerColor = data.color;
+            globalEventListner(data.color);
+        }
+        else if (data.color == "white") {
+            playerColor = data.color;
+            globalEventListner(data.color);
+        }
+    }
+    if(data.purpose == "updateBoard"&&data.position!=""){
+        
+            updatingPieceMove(data.previousMove);
+        
+    }
     // If the response contains possible moves, update previousHighlightedSquare
     if (data.possibleMoves || data.possibleCaptures) {
         // Highlight the possible move squares (bubbles)
@@ -224,7 +273,17 @@ socket.addEventListener('message', function (event) {
             previousHighlightedSquare = []; // Clear highlighted squares array
             previousHighlightedCross = [];
         }
-    } else {
+
+    }
+    else if (data.status == "check") {
+        console.log("protect your king");
+    }
+    else if (data.status == "Checkmate") {
+        console.log("Checkmate! " + data.winColor + "Wins");
+        checkmate(data.winColor);
+
+    }
+    else {
         console.log("There is an error in updating the backend board");
     }
 });
@@ -242,4 +301,31 @@ socket.addEventListener('error', function (event) {
 });
 
 renderEachSquare(globalState);
-globalEventListner();
+
+function sendPeriodicUpdateRequest() {
+    const updateRequest = JSON.stringify({
+        purpose: "givemeopponentupdate",
+        color: playerColor // Assuming you have a variable that stores the player's color
+    });
+
+    // Send the JSON through WebSocket
+    socket.send(updateRequest);
+}
+
+// Call this function every 10 seconds (or your desired interval)
+setInterval(sendPeriodicUpdateRequest, 3000);
+
+
+// Simulating a checkmate condition
+function checkmate(winner) {
+    // Create a new div to show the result
+    const message = document.createElement('div');
+    message.classList.add('checkmate-message');
+
+    // Set the content based on the winner
+    // console.log("wincolor"+winner);
+    message.innerText = winner == "Black" ? 'Black Wins!' : 'White Wins!';
+
+    // Append the message to the root
+    document.getElementById('root').appendChild(message);
+}
