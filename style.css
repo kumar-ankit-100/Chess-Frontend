@@ -13,10 +13,145 @@ body {
 
 
 }
-
+#section1{
+    width: 65%;
+    height: 100%;
+    display: flex;
+}
+#timerContainer{
+    width: 30%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#timer{
+    height: 25%;
+    width: 50%;
+    background-color: rgb(61,58,56);
+    padding: 15px;
+    display: flex;
+    flex-direction:column;
+    justify-content: space-between;
+    border-radius: 15px;
+}
+.timeText {
+    font-size: 47px; /* Text ka size */
+    color: rgb(255, 255, 255); /* Text ka color */
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+}
+#chess_container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.player1, .player2 {
+    width: 600px; 
+    height: 30px;
+    /* background-color: rgb(61,58,56); */
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    padding: 0 30px;
+}
+.playerName{
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    color: white;
+}
 #root {
-    height: 700px;
-    width: 700px;
+    height: 600px;
+    width: 600px;
+    margin:10px 0;
+    position: relative;
+}
+#section2{
+    width: 35%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#playedMove,#login{
+     width: 60%;
+     height: 50%;
+     background-color: rgb(61,58,56);
+     margin-bottom: 70px;
+     padding: 5%;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: space-evenly;
+     border-radius: 15px;
+
+}
+#login{
+    height: 35%;
+    justify-content: center;
+}
+#loginmessageInput {
+    width: 100%;
+    height: 40px; 
+    margin-bottom: 20px;
+    border-radius: 10px;
+    outline:  none;
+    background-color: #201e1d; 
+    color: white; 
+    border: none; 
+    padding: 10px;
+    font-size: 16px;
+}
+#loginmessageInput::placeholder{
+    color: white;
+}
+#previousMove{
+    height: 80%;
+    width: 100%;
+    background-color: #302e2b;
+    border-radius: 15px;
+    padding: 15px;
+    overflow-y: auto;
+}
+#previousMove::-webkit-scrollbar {
+    display: none;
+}
+.moveConatainer{
+    display: flex;
+}
+.move{
+    width: 50%;
+    text-align: center;
+    color: white;
+    font-size: large;
+}
+#messageBox{
+    width: 70%;
+    height: 25%;
+    background-color:rgb(61,58,56)  ;
+    display: block;
+    border-radius: 15px;
+    /* flex-direction: column; */
+}
+#messageContainer{
+    flex-grow: 1;
+    height: 60%;
+    width: 90%;
+    margin: 3% 5% 0% 5% ;
+    background-color:#302e2b;
+    border-radius: 15px;
+    padding: 10px;
+    /* color: rgb(74, 202, 39); */
+    color: rgb(80, 220, 41);
+    font-size: large;
+    overflow-y: auto;
+}
+#messageContainer::-webkit-scrollbar {
+    display: none;
 }
 
 .row {
@@ -98,3 +233,110 @@ body {
     font-family: Arial, sans-serif;
 }
 
+
+#chatContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 10px;
+}
+
+#messageInput {
+    width: 80%;
+    height: 30%; 
+    border-radius: 15px;
+    outline:  none;
+    background-color: #201e1d; 
+    color: white; 
+    border: none; 
+    padding: 10px;
+    font-size: 16px;
+}
+
+#messageInput::placeholder {
+    color: white; 
+}
+
+#sendButton {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.sendIcon {
+    width: 30px; 
+    height: 30px;
+}
+/* css for time selection */
+#timerDropdownContainer {
+    position: relative;
+    width: 200px;
+    font-family: Arial, sans-serif;
+}
+
+
+#selectedTimer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #201e1d;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.timerIcon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+#dropdownOptions {
+    position: absolute;
+    top: 100%;
+    margin-top: 10px;
+    border: none;
+    outline: none;
+    left: 0;
+    width: 100%;
+    background-color: rgb(97, 92, 88);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdownItem {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.dropdownItem:hover {
+    background-color: rgb(162, 172, 153);
+    border-radius: 5px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+/*play button */
+#play-button {
+    background-color: rgb(129, 183, 77); 
+    color: white; 
+    font-size: 20px; 
+    font-weight: bold;
+    margin-top: 50px;
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; 
+}
+
+.play-button:hover {
+    background-color: rgb(100, 150, 60); 
+}

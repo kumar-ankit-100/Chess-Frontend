@@ -1,13 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chess Game</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div id="root"></div>
-<script type="module" src="index.js"></script>    
-</body>
-</html> 
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="section1">
+      <div id="timerContainer">
+        <div id="timer">
+          <span class="timeText">10:00</span>
+          <span class="timeText">10:00</span>
+        </div>
+      </div>
+      <div id="chess_container">
+        <div class="player1"><span id="blackPlayer" class="playerName"></span></div>
+        <div id="root"></div>
+        <div class="player2"><span id="whitePlayer" class="playerName"></span></div>
+      </div>
+    </div>
+    <div id="section2">
+      <div id="login">
+        <div id="loginchatContainer">
+          <input
+            type="text"
+            id="loginmessageInput"
+            placeholder="Type your Name ..."
+          />
+        </div>
+        <div id="timerDropdownContainer">
+          <div id="selectedTimer">
+            <div></div>
+
+            <span id="timerValue">10 min</span>
+            <div id="arrow">&#9660;</div>
+          </div>
+          <div id="dropdownOptions" class="hidden">
+            <div class="dropdownItem" data-value="10 min">10 min</div>
+            <div class="dropdownItem" data-value="15 min">15 min</div>
+            <div class="dropdownItem" data-value="20 min">20 min</div>
+          </div>
+        </div>
+        <button id="play-button">Play Now</button>
+      </div>
+      <div id="playedMove">
+        <span class="playerName">Previous Move</span>
+        <div id="previousMove"></div>
+      </div>
+      <div id="messageBox">
+        <div id="messageContainer"></div>
+        <div id="chatContainer">
+          <input
+            type="text"
+            id="messageInput"
+            placeholder="Type your message..."
+          />
+          <button id="sendButton">
+            <img src="send.png" alt="Send" class="sendIcon" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
