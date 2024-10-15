@@ -13,6 +13,7 @@ let opponentPlayerName = "";
 let previousMessage = "";
 // let previousMove="";
 let lastMove = "";
+let flag = 1;
 
 let storedPosition = ""; // To store the clicked piece's position
 
@@ -85,6 +86,10 @@ function updateMove(move){
     const moveTO = document.createElement("div");
     moveFrom.classList.add("move");
     moveTO.classList.add("move");
+    // if(!flag){
+    //     moveContainer.style.backgroundColor="black";
+    //     flag=!flag;
+    // }
 
 
     moveFrom.innerText = move.slice(0, 2);

@@ -127,7 +127,7 @@ body {
     width: 50%;
     text-align: center;
     color: white;
-    font-size: large;
+    font-size: 32px;
 }
 #messageBox{
     width: 70%;
@@ -311,6 +311,7 @@ body {
 .dropdownItem {
     padding: 10px;
     cursor: pointer;
+    color:white;
 }
 
 .dropdownItem:hover {
