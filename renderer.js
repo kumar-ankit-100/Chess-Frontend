@@ -13,6 +13,28 @@ function renderEachSquare(data) {
             //     console.log("blackpaawn");
             // }
 
+            if(square.id[1]==1){
+                const cornerElement= document.createElement("span");
+                cornerElement.classList.add("corner-text-bottom");
+                cornerElement.innerText=square.id[0];
+                if(square.color=="white")
+                    cornerElement.style.color="#769656";
+                else
+                cornerElement.style.color="white";
+                eachSquareElement.appendChild(cornerElement);
+            }
+            if(square.id[0]=='a'){
+                const cornerElement= document.createElement("span");
+                cornerElement.classList.add("corner-text-left");
+                cornerElement.innerText=square.id[1];
+
+                if(square.color=="white")
+                    cornerElement.style.color="#769656";
+                else
+                cornerElement.style.color="white";
+                eachSquareElement.appendChild(cornerElement);
+            }
+
             //pawn rendering
             if (square.id[1] == 7) {
                 square.piece = image.blackPawn(square.id);

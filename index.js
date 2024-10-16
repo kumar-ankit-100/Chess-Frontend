@@ -14,9 +14,59 @@ let previousMessage = "";
 // let previousMove="";
 let lastMove = "";
 let flag = 1;
+let isai = false;
 
 let storedPosition = ""; // To store the clicked piece's position
 
+const whiteTimerElement = document.querySelector("#timer .timeText:last-child");
+const blackTimerElement = document.querySelector(
+  "#timer .timeText:first-child"
+);
+let whiteTimer, blackTimer;
+// Timer class to manage countdown for each player
+class ChessTimer {
+  constructor(minutes, seconds, displayElement) {
+    this.totalSeconds = minutes * 60 + seconds;
+    this.displayElement = displayElement;
+    this.timerId = null;
+  }
+
+  start() {
+    if (this.timerId === null) {
+      this.timerId = setInterval(() => {
+        this.totalSeconds--;
+        this.updateDisplay();
+        if (this.totalSeconds <= 0) {
+          this.stop();
+          // Handle time's up scenario
+          alert("Time's up!");
+        }
+      }, 1000);
+    }
+  }
+
+  stop() {
+    if (this.timerId !== null) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
+  }
+
+  updateDisplay() {
+    const minutes = Math.floor(this.totalSeconds / 60);
+    const seconds = this.totalSeconds % 60;
+    this.displayElement.textContent = `${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  }
+}
+function initializeTimers() {
+  const initialMinutes = 10; // Change this to your desired initial time
+  whiteTimer = new ChessTimer(initialMinutes, 0, whiteTimerElement);
+  blackTimer = new ChessTimer(initialMinutes, 0, blackTimerElement);
+  whiteTimer.updateDisplay();
+  blackTimer.updateDisplay();
+}
 
 function highlightSquareBubble(previousHighlightedSquare) {
   previousHighlightedSquare.forEach((element) => {
@@ -75,33 +125,31 @@ function temp(id) {
   // console.log(temp);
   return [id[0] + temp1, id[0] + temp2];
 }
-let socket;
-function updateMove(move){
-    // alert("move updated");
-    const previousMove = document.getElementById("previousMove");
+function updateMove(move) {
+  // alert("move updated");
+  const previousMove = document.getElementById("previousMove");
 
-    const moveContainer = document.createElement("div");
-    moveContainer.classList.add("moveConatainer");
-    const moveFrom = document.createElement("div");
-    const moveTO = document.createElement("div");
-    moveFrom.classList.add("move");
-    moveTO.classList.add("move");
-    // if(!flag){
-    //     moveContainer.style.backgroundColor="black";
-    //     flag=!flag;
-    // }
+  const moveContainer = document.createElement("div");
+  moveContainer.classList.add("moveConatainer");
+  const moveFrom = document.createElement("div");
+  const moveTO = document.createElement("div");
+  moveFrom.classList.add("move");
+  moveTO.classList.add("move");
+  // if(!flag){
+  //     moveContainer.style.backgroundColor="black";
+  //     flag=!flag;
+  // }
 
+  moveFrom.innerText = move.slice(0, 2);
+  moveTO.innerText = move.slice(2, 4);
+  moveContainer.appendChild(moveFrom);
+  moveContainer.appendChild(moveTO);
+  previousMove.appendChild(moveContainer);
 
-    moveFrom.innerText = move.slice(0, 2);
-    moveTO.innerText = move.slice( 2,4);
-    moveContainer.appendChild(moveFrom);
-    moveContainer.appendChild(moveTO);
-    previousMove.appendChild(moveContainer);
-
-    lastMove=move;
-    // scroll move to last
-    let previousMoveContainer = document.getElementById("previousMove");
-    previousMoveContainer.scrollTop = previousMoveContainer.scrollHeight;
+  lastMove = move;
+  // scroll move to last
+  let previousMoveContainer = document.getElementById("previousMove");
+  previousMoveContainer.scrollTop = previousMoveContainer.scrollHeight;
 }
 function updateMessage(playerName, message) {
   const messageContainer = document.getElementById("messageContainer");
@@ -174,9 +222,9 @@ function globalEventListner(pieceColor) {
           pieceName: pieceName,
           position: clickedId, // Send the clicked square (e.g., "e2")
         });
+        socket.send(sendingJson);
 
         // Send the JSON through WebSocket
-        socket.send(sendingJson);
       }
     }
     //if class is bubble that mean we either move pieces or capture the pieces
@@ -226,20 +274,21 @@ function globalEventListner(pieceColor) {
 //this code is used to connection of frontend to bakcend using socket
 
 function updatingPieceMove(move) {
-    // console.log("chal htt bahen ke lori");
+  // console.log("chal htt bahen ke lori");
   const fromPosition = move.slice(0, 2); // "e2"
   const toPosition = move.slice(2, 4); // "e4"
 
   // Find the elements for the previous and new positions
   const fromElement = document.getElementById(fromPosition);
   const toElement = document.getElementById(toPosition);
+  console.log("come in updating fucntion to update move");
 
   if (fromElement && toElement) {
     // Get the piece (child) from the previous position
     const piece = fromElement.querySelector("img");
     const destinationpiece = toElement.querySelector("img");
 
-    if (destinationpiece&&piece) toElement.removeChild(destinationpiece);
+    if (destinationpiece && piece) toElement.removeChild(destinationpiece);
     // Remove the piece from the previous position
     if (piece) {
       fromElement.removeChild(piece);
@@ -272,6 +321,7 @@ function updateName(whitePlayerName, blackPlayerName) {
   }
 }
 
+let socket;
 function initializeWebsocket(playerName) {
   socket = new WebSocket("ws://localhost:8080");
 
@@ -285,12 +335,18 @@ function initializeWebsocket(playerName) {
     console.log("Received from server:", data);
     //check that either match started
     if (data.color) {
-      if (data.color == "black") {
-        playerColor = data.color;
-        globalEventListner(data.color);
-      } else if (data.color == "white") {
-        playerColor = data.color;
-        globalEventListner(data.color);
+      //check if ai is playing then add event listner to both piece
+      if (isai) {
+        globalEventListner("white");
+        // globalEventListner("black");
+      } else {
+        if (data.color == "black") {
+          playerColor = data.color;
+          globalEventListner(data.color);
+        } else if (data.color == "white") {
+          playerColor = data.color;
+          globalEventListner(data.color);
+        }
       }
     }
     if (data.purpose == "updateBoard" && data.message != "") {
@@ -303,33 +359,47 @@ function initializeWebsocket(playerName) {
       }
     }
     if (data.purpose == "updateBoard" && data.previousMove != "") {
-        console.log("ladfslkjjlkdfskjldsaflkjdadlk");
-        updatingPieceMove(data.previousMove);
-
+      console.log("ladfslkjjlkdfskjldsaflkjdadlk");
+      if (data.previousMove != lastMove) {
+        if (playerColor == "white") {
+          whiteTimer.start();
+          blackTimer.stop();
+        } else {
+          blackTimer.start();
+          whiteTimer.stop();
+        }
+      }
+      updatingPieceMove(data.previousMove);
     }
     if (data.purpose == "updateBoard" && data.position != "") {
       if (playerColor == "white") updateName(playerName, data.opponentName);
       else updateName(data.opponentName, playerName);
+
       if (opponentPlayerName == "") opponentPlayerName = data.opponentName;
-      if(data.previousMove!=""&&data.previousMove!=lastMove)
-      {
-          lastMove=data.previousMove;
-          updateMove(data.previousMove);
-          // scroll move to last
-          let previousMoveContainer = document.getElementById("previousMove");
-          previousMoveContainer.scrollTop = previousMoveContainer.scrollHeight;
+      if (data.previousMove != "" && data.previousMove != lastMove) {
+        lastMove = data.previousMove;
+        updateMove(data.previousMove);
+        // scroll move to last
+        let previousMoveContainer = document.getElementById("previousMove");
+        previousMoveContainer.scrollTop = previousMoveContainer.scrollHeight;
       }
     }
     if (data.message == "Match started") {
       // Hide login and show game elements
       document.getElementById("login").style.display = "none";
-      document.getElementById("timer").style.display = "flex";
       document.getElementById("playedMove").style.display = "flex";
-      document.getElementById("messageBox").style.display = "block";
+      if (!isai) {
+        document.getElementById("timer").style.display = "flex";
+        document.getElementById("messageBox").style.display = "block";
+      }
       let players = document.getElementsByClassName("playerName");
       for (let i = 0; i < players.length; i++) {
         players[i].style.display = "flex";
       }
+      initializeTimers();
+      // if (playerColor == "white") {
+      whiteTimer.start();
+      // }
     }
     // If the response contains possible moves, update previousHighlightedSquare
     if (data.possibleMoves || data.possibleCaptures) {
@@ -351,10 +421,17 @@ function initializeWebsocket(playerName) {
 
     if (data.status == "success") {
       console.log("backend board is updated successfully");
+      if (playerColor == "white") {
+        whiteTimer.stop();
+        blackTimer.start();
+      } else {
+        blackTimer.stop();
+        whiteTimer.start();
+      }
 
       // Get the previous and new positions from the move (e.g., "e2e4")
       const move = data.position; // e.g., "e2e4"
-     
+
       //calling update move function to update prev move on box
       updateMove(move);
 
@@ -418,13 +495,41 @@ function initializeWebsocket(playerName) {
     socket.send(updateRequest);
   }
 
-  // Call this function every 10 seconds (or your desired interval)
-  setInterval(sendPeriodicUpdateRequest, 1000);
+  // Call this function every 1 seconds (or your desired interval)
+  setInterval(sendPeriodicUpdateRequest, 3000);
 }
 // initializeWebsocket();
 
 // Function to handle the "Play Now" button click
-function handlePlayNow() {
+function initializeAIGame() {
+  isai = true;
+  const playerName = document.getElementById("loginmessageInput").value;
+
+  if (!playerName) {
+    alert("Please enter your name before playing.");
+    return;
+  }
+  currentPlayerName = playerName;
+  playerColor = "white";
+
+  // Initialize WebSocket connection
+  initializeWebsocket(playerName);
+
+  // Prepare and send the AI game request
+
+  const gameRequest = {
+    purpose: "playWithAI",
+    playerName: playerName,
+  };
+  socket.onopen = function () {
+    socket.send(JSON.stringify(gameRequest));
+  };
+}
+function handlePlayNow(isAI) {
+  if (isAI) {
+    initializeAIGame();
+    return;
+  }
   const playerName = document.getElementById("loginmessageInput").value;
   const selectedTime = document.getElementById("timerValue").textContent;
 
@@ -443,12 +548,23 @@ function handlePlayNow() {
     playerName: playerName,
   };
 
-  //   socket.send(JSON.stringify(gameRequest));
+  // socket.onopensend(JSON.stringify(gameRequest));
+  socket.onopen = function () {
+    socket.send(JSON.stringify(gameRequest));
+  };
 }
 
 renderEachSquare(globalState);
 // Add event listener to the "Play Now" button
-document.getElementById("play-button").addEventListener("click", handlePlayNow);
+document.getElementById("play-button").addEventListener("click", (Event) => {
+  console.log(Event);
+  handlePlayNow(false);
+});
+document.getElementById("play-ai-button").addEventListener("click", (Event) => {
+  console.log(Event);
+  handlePlayNow(true);
+});
+
 // Simulating a checkmate condition
 function checkmate(winner) {
   // Create a new div to show the result

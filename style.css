@@ -68,6 +68,22 @@ body {
     margin:10px 0;
     position: relative;
 }
+.corner-text-bottom {
+    position: absolute;
+    bottom: 5px;  
+    right: 5px;   
+    font-size: 20px; 
+    color: black; 
+    font-weight: bold; 
+}
+.corner-text-left {
+    position: absolute;
+    top: 5px;  
+    left: 5px;   
+    font-size: 20px; 
+    color: black; 
+    font-weight: bold; 
+}
 #section2{
     width: 35%;
     height: 100%;
@@ -91,8 +107,14 @@ body {
 
 }
 #login{
-    height: 35%;
+    height: 40%;
     justify-content: center;
+}
+#or{
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    margin-top: 3%;
 }
 #loginmessageInput {
     width: 100%;
@@ -325,19 +347,22 @@ body {
 
 
 /*play button */
-#play-button {
+#play-button ,#play-ai-button{
     background-color: rgb(129, 183, 77); 
     color: white; 
     font-size: 20px; 
     font-weight: bold;
-    margin-top: 50px;
+    margin-top: 5%;
     padding: 10px 20px; 
     border: none; 
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s ease; 
 }
-
+#play-ai-button{
+    margin-top: 3%;
+    font-size: 15px;
+}
 .play-button:hover {
     background-color: rgb(100, 150, 60); 
 }
