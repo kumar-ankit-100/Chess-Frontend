@@ -398,6 +398,7 @@ function initializeWebsocket(playerName) {
       }
       initializeTimers();
       // if (playerColor == "white") {
+      if(isai==false)
       whiteTimer.start();
       // }
     }
@@ -421,12 +422,15 @@ function initializeWebsocket(playerName) {
 
     if (data.status == "success") {
       console.log("backend board is updated successfully");
-      if (playerColor == "white") {
-        whiteTimer.stop();
-        blackTimer.start();
-      } else {
-        blackTimer.stop();
-        whiteTimer.start();
+      if(isai==flase){
+
+        if (playerColor == "white") {
+          whiteTimer.stop();
+          blackTimer.start();
+        } else {
+          blackTimer.stop();
+          whiteTimer.start();
+        }
       }
 
       // Get the previous and new positions from the move (e.g., "e2e4")
@@ -496,7 +500,7 @@ function initializeWebsocket(playerName) {
   }
 
   // Call this function every 1 seconds (or your desired interval)
-  setInterval(sendPeriodicUpdateRequest, 3000);
+  setInterval(sendPeriodicUpdateRequest, 400);
 }
 // initializeWebsocket();
 
