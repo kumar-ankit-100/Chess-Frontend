@@ -325,7 +325,7 @@ function updateName(whitePlayerName, blackPlayerName) {
 
 let socket;
 function initializeWebsocket(playerName) {
-  socket = new WebSocket("ws://13.233.136.134:8080");
+  socket = new WebSocket("ws://13.201.103.250:8080");
 
   // Connection opened
   socket.addEventListener("open", function (event) {
@@ -387,6 +387,9 @@ function initializeWebsocket(playerName) {
       }
     }
     if (data.message == "Match started") {
+
+      document.body.classList.add('match-started'); //i add this class when match started for mobile responsiveness
+
       // Hide login and show game elements
       document.getElementById("login").style.display = "none";
       document.getElementById("playedMove").style.display = "flex";
