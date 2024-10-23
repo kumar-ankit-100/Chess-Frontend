@@ -63,8 +63,8 @@ body {
     color: white;
 }
 #root {
-    height: 600px;
-    width: 600px;
+    height: 80%;
+    width: 100%;
     margin:10px 0;
     position: relative;
 }

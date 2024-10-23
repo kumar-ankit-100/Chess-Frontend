@@ -61,7 +61,9 @@ class ChessTimer {
   }
 }
 function initializeTimers() {
-  const initialMinutes = 10; // Change this to your desired initial time
+  let initialMinutes;
+  if (isai) initialMinutes = 60; // Change this to your desired initial time
+  else initialMinutes = 10;
   whiteTimer = new ChessTimer(initialMinutes, 0, whiteTimerElement);
   blackTimer = new ChessTimer(initialMinutes, 0, blackTimerElement);
   whiteTimer.updateDisplay();
@@ -323,7 +325,7 @@ function updateName(whitePlayerName, blackPlayerName) {
 
 let socket;
 function initializeWebsocket(playerName) {
-  socket = new WebSocket("ws://localhost:8080");
+  socket = new WebSocket("ws://13.233.136.134:8080");
 
   // Connection opened
   socket.addEventListener("open", function (event) {
@@ -398,7 +400,6 @@ function initializeWebsocket(playerName) {
       }
       initializeTimers();
       // if (playerColor == "white") {
-      if(isai==false)
       whiteTimer.start();
       // }
     }
@@ -422,15 +423,12 @@ function initializeWebsocket(playerName) {
 
     if (data.status == "success") {
       console.log("backend board is updated successfully");
-      if(isai==flase){
-
-        if (playerColor == "white") {
-          whiteTimer.stop();
-          blackTimer.start();
-        } else {
-          blackTimer.stop();
-          whiteTimer.start();
-        }
+      if (playerColor == "white") {
+        whiteTimer.stop();
+        blackTimer.start();
+      } else {
+        blackTimer.stop();
+        whiteTimer.start();
       }
 
       // Get the previous and new positions from the move (e.g., "e2e4")
@@ -616,6 +614,10 @@ function messageBox() {
   document.getElementById("messageBox").style.display = "none";
 }
 messageBox();
+function timerDropdownContainer() {
+  document.getElementById("timerDropdownContainer").style.display = "none";
+}
+timerDropdownContainer();
 function playerName() {
   let players = document.getElementsByClassName("playerName");
   for (let i = 0; i < players.length; i++) {
