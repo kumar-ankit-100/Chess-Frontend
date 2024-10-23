@@ -325,7 +325,7 @@ function updateName(whitePlayerName, blackPlayerName) {
 
 let socket;
 function initializeWebsocket(playerName) {
-  socket = new WebSocket("wss://13.233.136.134:8080");
+  socket = new WebSocket("ws://13.233.136.134:8080");
 
   // Connection opened
   socket.addEventListener("open", function (event) {
